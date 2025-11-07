@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Game Assets/Scenes/Base Scene.unity
+    guid: ca52f21b90041ff40a0026a40e8cf071
+  - enabled: 1
+    path: Assets/Game Assets/Scenes/Painting Worlds/First Location.unity
+    guid: 26ce0e79b57104a4aaf7544df0c1459a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 29490949d5e7b0f4bbe37c482619eb1e, type: 2}
