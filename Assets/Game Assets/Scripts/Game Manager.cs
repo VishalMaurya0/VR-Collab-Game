@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,9 +13,21 @@ public class GameManager : MonoBehaviour
 
     [Header("References")]
     public List<string> PaintingWorlds = new List<string>();
-    public int currentPaintingIndex = 0;
     public Transition transitionEffect;
     public GameObject postProcessPrefab;
+    public GameObject CanvasForTimeTOStay;
+    public GameObject timeOfStayText;
+
+    [Header("Inital Parameters")]
+    public string baseSceneName = "Base Scene";
+    public int currentPaintingIndex = 0;
+
+
+    [Header("Properties")]
+    public float totalTimeInsidePainting = 10f;
+    public float timer_InsidePainting = 0f;
+    bool insidePainting = false;
+
 
     private void Awake()
     {
@@ -43,6 +56,24 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Delay to let Unity finish loading everything
+        StartCoroutine(ReinitializeSceneReferences());
+    }
+
+    private IEnumerator ReinitializeSceneReferences()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        InitializeTransition();
+        TryFindOrCreateTimeUI();
+
+        if (transitionEffect != null)
+            yield return transitionEffect.ReverseTransition();
+    }
+
     private void InitializeTransition()
     {
         transitionEffect = FindAnyObjectByType<Transition>();
@@ -54,38 +85,75 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void TryFindOrCreateTimeUI()
     {
-        if (this == null) return;
-        StartCoroutine(FindTransitionAfterLoad());
+        timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+
+        if (timeOfStayText == null && CanvasForTimeTOStay != null)
+        {
+            Instantiate(CanvasForTimeTOStay);
+            timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+        }
+
+        if (timeOfStayText != null)
+            timeOfStayText.SetActive(false);
     }
 
 
-    private IEnumerator FindTransitionAfterLoad()
+    private void Start()
     {
-        yield return new WaitForSeconds(0.1f); // wait one frame or so
-        transitionEffect = FindAnyObjectByType<Transition>();
-
-        if (transitionEffect != null)
+        InitializeTransition();
+        if (timeOfStayText == null)
         {
-            yield return transitionEffect.ReverseTransition();
-        }
-        else
-        {
-            InitializeTransition();
+            timeOfStayText = GameObject.FindWithTag("TimeOfStay");
         }
     }
 
     private void Update()
     {
+        if (transitionEffect == null)
+            InitializeTransition();
+        if (timeOfStayText == null)
+            TryFindOrCreateTimeUI();
+
+
+        if (timeOfStayText != null)
+        {
+            if (insidePainting)
+            {
+                float timeLeft = totalTimeInsidePainting - timer_InsidePainting;
+                timeOfStayText.SetActive(true);
+                TMP_Text text = timeOfStayText.GetComponent<TMP_Text>();
+                text.text = "Time Of Stay: " + timeLeft.ToString("F2") + " secs";
+            }
+            else
+            {
+                timeOfStayText.SetActive(false);
+            }
+        }
+
         if (Input.GetKeyDown(KeyCode.E) && transitionEffect != null)
         {
+            baseSceneName = SceneManager.GetActiveScene().name;
             StartCoroutine(transitionEffect.DoTransition(PaintingWorlds[currentPaintingIndex]));
+            insidePainting = true;
         }
 
         if (Input.GetKeyDown(KeyCode.R) && transitionEffect != null)
         {
             StartCoroutine(transitionEffect.ReverseTransition());
+        }
+
+        if (insidePainting)
+        {
+            timer_InsidePainting += Time.deltaTime;
+            if (timer_InsidePainting >= totalTimeInsidePainting)
+            {
+                // Time's up, exit painting
+                StartCoroutine(transitionEffect.DoTransition(baseSceneName));
+                insidePainting = false;
+                timer_InsidePainting = 0f;
+            }
         }
     }
 }
