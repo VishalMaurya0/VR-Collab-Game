@@ -2,112 +2,125 @@
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Transition : MonoBehaviour
 {
     [Header("References")]
     public Volume volume;
 
-    [Header("Target Values")]
-    public float targetExposure = 5f;
-    public float maxBloom = 10f;
-    public float minDistortion = -0.5f;
-    public float maxChromaticAberration = 1f;
+    [Header("Transition Duration")]
     public float transitionDuration = 2f;
+
+    [System.Serializable]
+    public class TransitionSettings
+    {
+        [Range(-5f, 5f)] public float exposure = 0f;
+        [Range(0f, 20f)] public float bloom = 0f;
+        [Range(-1f, 1f)] public float lensDistortion = 0f;
+        [Range(0f, 1f)] public float lensScale = 1f;
+        [Range(0f, 1f)] public float chromaticAberration = 0f;
+    }
+
+    [Header("Before Transition (start)")]
+    public TransitionSettings beforeTransition = new TransitionSettings();
+
+    [Header("After Transition (end)")]
+    public TransitionSettings afterTransition = new TransitionSettings();
 
     private ColorAdjustments colorAdjust;
     private Bloom bloom;
     private LensDistortion lensDist;
     private ChromaticAberration chromatic;
 
+    private void Awake()
+    {
+        TryFetchOverrides();
+        SetToFinalState(afterTransition);
+    }
+
     private void Start()
     {
-        volume.profile.TryGet(out colorAdjust);
-        volume.profile.TryGet(out bloom);
-        volume.profile.TryGet(out lensDist);
-        volume.profile.TryGet(out chromatic);
+        // Automatically reverse on load to fade in from the "after" state
+        StartCoroutine(ReverseTransition());
     }
 
-    private void Update()
+    private void TryFetchOverrides()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            StartCoroutine(DoTransition());
-        }
+        if (volume == null)
+            volume = GetComponent<Volume>();
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (volume != null && volume.profile != null)
         {
-            StartCoroutine(ReverseTransition());
+            volume.profile.TryGet(out colorAdjust);
+            volume.profile.TryGet(out bloom);
+            volume.profile.TryGet(out lensDist);
+            volume.profile.TryGet(out chromatic);
+        }
+        else
+        {
+            Debug.LogWarning("Transition: Volume or Volume Profile missing!");
         }
     }
 
-    private IEnumerator DoTransition()
+    private void OnEnable()
     {
-        float startExposure = colorAdjust.postExposure.value;
-        float startBloom = bloom.intensity.value;
-        float startDist = lensDist.intensity.value;
-        float startDistScale = lensDist.scale.value;
-        float startChrom = chromatic.intensity.value;
+        TryFetchOverrides();
+    }
 
+    public IEnumerator DoTransition(string scene)
+    {
+        TryFetchOverrides();
+        if (!AreOverridesValid()) yield break;
+
+        yield return LerpSettings(beforeTransition, afterTransition);
+
+        SceneManager.LoadScene(scene);
+    }
+
+    public IEnumerator ReverseTransition()
+    {
+        TryFetchOverrides();
+        if (!AreOverridesValid()) yield break;
+
+        yield return LerpSettings(afterTransition, beforeTransition);
+    }
+
+    private IEnumerator LerpSettings(TransitionSettings start, TransitionSettings end)
+    {
         float time = 0f;
-
         while (time < transitionDuration)
         {
             time += Time.deltaTime;
             float t = EaseInOutCubic(time / transitionDuration);
 
-            colorAdjust.postExposure.value = Mathf.Lerp(startExposure, targetExposure, t);
-            bloom.intensity.value = Mathf.Lerp(startBloom, maxBloom, t);
-            lensDist.intensity.value = Mathf.Lerp(startDist, minDistortion, t);
-            lensDist.scale.value = Mathf.Lerp(startDistScale, 0, t);
-            chromatic.intensity.value = Mathf.Lerp(startChrom, maxChromaticAberration, t);
+            colorAdjust.postExposure.value = Mathf.Lerp(start.exposure, end.exposure, t);
+            bloom.intensity.value = Mathf.Lerp(start.bloom, end.bloom, t);
+            lensDist.intensity.value = Mathf.Lerp(start.lensDistortion, end.lensDistortion, t);
+            lensDist.scale.value = Mathf.Lerp(start.lensScale, end.lensScale, t);
+            chromatic.intensity.value = Mathf.Lerp(start.chromaticAberration, end.chromaticAberration, t);
 
             yield return null;
         }
 
-        colorAdjust.postExposure.value = targetExposure;
-        bloom.intensity.value = maxBloom;
-        lensDist.intensity.value = minDistortion;
-        lensDist.scale.value = 0;
-        chromatic.intensity.value = maxChromaticAberration;
+        // Ensure final exact values are applied
+        SetToFinalState(end);
     }
 
-    private IEnumerator ReverseTransition()
+    private void SetToFinalState(TransitionSettings state)
     {
-        float startExposure = colorAdjust.postExposure.value;
-        float startBloom = bloom.intensity.value;
-        float startDist = lensDist.intensity.value;
-        float startDistScale = lensDist.scale.value;
-        float startChrom = chromatic.intensity.value;
+        if (!AreOverridesValid()) return;
 
-        float time = 0f;
+        colorAdjust.postExposure.value = state.exposure;
+        bloom.intensity.value = state.bloom;
+        lensDist.intensity.value = state.lensDistortion;
+        lensDist.scale.value = state.lensScale;
+        chromatic.intensity.value = state.chromaticAberration;
+    }
 
-        // Target normal (baseline) values
-        float normalExposure = 0f;
-        float normalBloom = 0f;
-        float normalDistortion = 0f;
-        float normalScale = 1f;
-        float normalChrom = 0f;
-
-        while (time < transitionDuration)
-        {
-            time += Time.deltaTime;
-            float t = EaseInOutCubic(time / transitionDuration);
-
-            colorAdjust.postExposure.value = Mathf.Lerp(startExposure, normalExposure, t);
-            bloom.intensity.value = Mathf.Lerp(startBloom, normalBloom, t);
-            lensDist.intensity.value = Mathf.Lerp(startDist, normalDistortion, t);
-            lensDist.scale.value = Mathf.Lerp(startDistScale, normalScale, t);
-            chromatic.intensity.value = Mathf.Lerp(startChrom, normalChrom, t);
-
-            yield return null;
-        }
-
-        colorAdjust.postExposure.value = normalExposure;
-        bloom.intensity.value = normalBloom;
-        lensDist.intensity.value = normalDistortion;
-        lensDist.scale.value = normalScale;
-        chromatic.intensity.value = normalChrom;
+    private bool AreOverridesValid()
+    {
+        return (colorAdjust != null && bloom != null && lensDist != null && chromatic != null);
     }
 
     private float EaseInOutCubic(float t)
