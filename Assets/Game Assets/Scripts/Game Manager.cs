@@ -16,7 +16,8 @@ public class GameManager : MonoBehaviour
     public Transition transitionEffect;
     public GameObject postProcessPrefab;
     public GameObject CanvasForTimeTOStay;
-    public GameObject timeOfStayText;
+    public GameObject timeOfStayText;   
+    public Camera mainCamera;
 
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
@@ -91,7 +92,7 @@ public class GameManager : MonoBehaviour
 
         if (timeOfStayText == null && CanvasForTimeTOStay != null)
         {
-            Instantiate(CanvasForTimeTOStay);
+            Instantiate(CanvasForTimeTOStay, mainCamera.transform);
             timeOfStayText = GameObject.FindWithTag("TimeOfStay");
         }
 
@@ -107,6 +108,7 @@ public class GameManager : MonoBehaviour
         {
             timeOfStayText = GameObject.FindWithTag("TimeOfStay");
         }
+        mainCamera = GameObject.FindAnyObjectByType<Camera>();
     }
 
     private void Update()
@@ -128,7 +130,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                timeOfStayText.SetActive(false);
+                //timeOfStayText.SetActive(false);
             }
         }
 
