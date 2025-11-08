@@ -210,6 +210,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 5.683
       objectReference: {fileID: 0}
+    - target: {fileID: 6524832644328142421, guid: 5e50eba45ef63694ab6dad66efcbb007, type: 3}
+      propertyPath: OnPressed.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
