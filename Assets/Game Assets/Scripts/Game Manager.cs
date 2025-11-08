@@ -89,10 +89,12 @@ public class GameManager : MonoBehaviour
     private void TryFindOrCreateTimeUI()
     {
         timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+        mainCamera = GameObject.FindAnyObjectByType<Camera>();
 
         if (timeOfStayText == null && CanvasForTimeTOStay != null)
         {
-            Instantiate(CanvasForTimeTOStay, mainCamera.transform);
+            Instantiate(CanvasForTimeTOStay,
+                mainCamera.transform);
             timeOfStayText = GameObject.FindWithTag("TimeOfStay");
         }
 
@@ -103,12 +105,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        mainCamera = GameObject.FindAnyObjectByType<Camera>();
         InitializeTransition();
         if (timeOfStayText == null)
         {
             timeOfStayText = GameObject.FindWithTag("TimeOfStay");
         }
-        mainCamera = GameObject.FindAnyObjectByType<Camera>();
     }
 
     private void Update()

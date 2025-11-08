@@ -1,12 +1,14 @@
 using UnityEngine;
 using Autohand;
+using TMPro;
 
 public class ButtonSetCode : MonoBehaviour
 {
     public Chest targetChest;
     public int buttonIndex;    
-    public int codeDigit;      
     private PhysicsGadgetButton button;
+
+    public TMP_Text text;
 
     void Start()
     {
@@ -19,14 +21,17 @@ public class ButtonSetCode : MonoBehaviour
 
     private void OnButtonPressed()
     {
-        targetChest.ShowButtonUI();
+        targetChest.ShowButtonUI(true);
+        targetChest.codeIndex = buttonIndex;
     }
 
-    public void SetCodeDigit()
-    {
-        if (targetChest != null)
-            targetChest.code[buttonIndex] = codeDigit;
-        else
-            Debug.LogError("Button has no targetChest assigned!");
+    //public void SetCodeDigit()
+    //{
+    //    if (targetChest != null)
+    //        targetChest.code[buttonIndex] = codeDigit;
+    //    else
+    //        Debug.LogError("Button has no targetChest assigned!");
+    void Update() {
+        text.text = targetChest.code[buttonIndex].ToString();
     }
 }
