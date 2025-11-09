@@ -1,4 +1,5 @@
 using Autohand;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -19,6 +20,8 @@ public class GameManager : MonoBehaviour
     public GameObject CanvasForTimeTOStay;
     public GameObject timeOfStayText;   
     public Camera mainCamera;
+    public GameObject playerPrefab;
+    public GameObject playerGO;
 
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
@@ -58,18 +61,38 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         InitializeTransition();
-
-        // Subscribe only once
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void OnDestroy()
     {
-        // Prevent ghost events from destroyed instances
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private void OnEnable()
+    {
+        // ensure only one subscription
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        SceneManager.activeSceneChanged += OnActiveSceneChanged;
+
+        Debug.Log("[GameManager] Subscribed to scene events");
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        Debug.Log("[GameManager] Unsubscribed from scene events");
+    }
+
+    private void OnActiveSceneChanged(Scene prev, Scene next)
+    {
+        Debug.Log($"[GameManager] ActiveSceneChanged: {prev.name} -> {next.name}");
+        // sometimes activeSceneChanged gets called when sceneLoaded doesn't in editor/build; run reinit too
+        StartCoroutine(ReinitializeSceneReferences());
+    }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -79,8 +102,9 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator ReinitializeSceneReferences()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
 
+        INstantiatePLayer();
         InitializeTransition();
         TryFindOrCreateTimeUI();
 
@@ -173,6 +197,14 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        HandleTeleport();
+
+
+    }
+
+    private void HandleTeleport()
+    {
+        
 
         if (unlockGate1)
         {
@@ -198,5 +230,68 @@ public class GameManager : MonoBehaviour
             }
             gate3.GetComponent<Grabbable>().enabled = true;
         }
+
+
+        if (teleportObjects.Count > 0)
+        {
+            if (SceneManager.GetActiveScene().name != baseSceneName)
+                return;
+
+            if (playerGO == null)
+            {
+                playerGO = GameObject.FindWithTag("Player");
+            }
+
+            foreach (GameObject obj in teleportObjects)
+            {
+                if (obj != null)
+                {
+                    Instantiate(obj, playerGO.transform.position, Quaternion.identity);
+                }
+            }
+            teleportObjects.Clear();
+        }
     }
+
+    private void INstantiatePLayer()
+    {
+        string currentScene = SceneManager.GetActiveScene().name;
+        Debug.Log($"[GameManager] Checking player spawn for scene: {currentScene}");
+
+        // If we are NOT in the base scene
+        if (currentScene != baseSceneName)
+        {
+            Debug.Log("[GameManager] Current scene is NOT the base scene — checking if player exists...");
+
+            if (playerGO == null)
+            {
+                playerGO = Instantiate(playerPrefab);
+                Debug.Log($"[GameManager] Player instantiated successfully in scene: {currentScene}");
+            }
+            else
+            {
+                Debug.Log("[GameManager] Player already exists — no new instance created.");
+            }
+        }
+        else
+        {
+            Debug.Log("[GameManager] Current scene is the base scene — checking for existing player...");
+
+            if (playerGO == null)
+            {
+                playerGO = GameObject.FindWithTag("Player")?.gameObject;
+
+                if (playerGO != null)
+                    Debug.Log("[GameManager] Found existing player in base scene and assigned reference.");
+                else
+                    Debug.LogWarning("[GameManager] No player found in base scene! Make sure one exists with the 'Player' tag.");
+            }
+            else
+            {
+                Debug.Log("[GameManager] Player reference already assigned in base scene — skipping search.");
+            }
+        }
+    }
+
+
 }
