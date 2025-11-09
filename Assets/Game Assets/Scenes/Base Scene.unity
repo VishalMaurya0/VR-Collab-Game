@@ -1763,7 +1763,7 @@ GameObject:
   - component: {fileID: 459330233}
   - component: {fileID: 459330237}
   - component: {fileID: 459330238}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}

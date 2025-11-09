@@ -9,7 +9,7 @@ public class Portal : MonoBehaviour
             GameManager.Instance.timer_InsidePainting = GameManager.Instance.totalTimeInsidePainting;
         }
 
-        if (other.CompareTag("Grabbable"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("Grabbable"))
         {
             GameManager.Instance.teleportObjects.Add(other.gameObject);
             //other.gameObject.SetActive(false);
