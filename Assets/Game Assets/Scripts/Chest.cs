@@ -1,12 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
+using System;
+using Autohand;
 
 public class Chest : MonoBehaviour
 {
+    [Header("REFE")]
+    public Grabbable grabbable;
+
     [Header("Chest Code")]
     public List<int> code = new();
+    public List<int> ansCode = new();
     public int codeIndex = 0;
 
     [Header("UI")]
@@ -60,6 +66,22 @@ public class Chest : MonoBehaviour
         }
 
             codeIndex %= 4;
+
+        CheckCode();
+    }
+
+    private void CheckCode()
+    {
+        for (int i = 0; i < ansCode.Count; i++)
+        {
+            if (code[i] != ansCode[i])
+            {
+                grabbable.enabled = false;
+                return;
+            }
+        }
+
+        grabbable.enabled = true;
     }
 
     public void ShowButtonUI(bool show)

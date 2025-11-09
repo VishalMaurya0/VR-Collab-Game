@@ -1,3 +1,4 @@
+using Autohand;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -22,6 +23,17 @@ public class GameManager : MonoBehaviour
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
     public int currentPaintingIndex = 0;
+
+    [Header("Across Data")]
+    public bool unlockGate1 = false;
+    public bool unlockGate2 = false;
+    public bool unlockGate3 = false;
+    public bool placePointPlaced2 = false;
+
+    [Header("Gate Refe")]
+    public GameObject gate1;
+    public GameObject gate2;
+    public GameObject gate3;
 
 
     [Header("Properties")]
@@ -158,6 +170,32 @@ public class GameManager : MonoBehaviour
                 insidePainting = false;
                 timer_InsidePainting = 0f;
             }
+        }
+
+
+        if (unlockGate1)
+        {
+            if (gate1 == null)
+            {
+                gate1 = GameObject.FindWithTag("Gate1");
+            }
+            gate1.GetComponent<Grabbable>().enabled = true;
+        }
+        if (unlockGate2)
+        {
+            if (gate2 == null)
+            {
+                gate2 = GameObject.FindWithTag("Gate2");
+            }
+            gate2.GetComponent<Grabbable>().enabled = true;
+        }
+        if (unlockGate3)
+        {
+            if (gate3 == null)
+            {
+                gate3 = GameObject.FindWithTag("Gate3");
+            }
+            gate3.GetComponent<Grabbable>().enabled = true;
         }
     }
 }
