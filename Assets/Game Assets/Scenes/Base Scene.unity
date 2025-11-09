@@ -3127,7 +3127,7 @@ GameObject:
   - component: {fileID: 601879553}
   - component: {fileID: 601879552}
   - component: {fileID: 601879551}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5015,9 +5015,9 @@ GameObject:
   - component: {fileID: 905288593}
   - component: {fileID: 905288592}
   - component: {fileID: 905288591}
-  m_Layer: 12
+  m_Layer: 7
   m_Name: handle (1)
-  m_TagString: Untagged
+  m_TagString: Gate1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5854,6 +5854,14 @@ PrefabInstance:
     - target: {fileID: 185075803569865485, guid: f13bbbc9578242a44953eec81cfb27d4, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 978722647479649261, guid: f13bbbc9578242a44953eec81cfb27d4, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 978722647479649261, guid: f13bbbc9578242a44953eec81cfb27d4, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 1575735658702523898, guid: f13bbbc9578242a44953eec81cfb27d4, type: 3}
       propertyPath: follow
@@ -8005,6 +8013,7 @@ MonoBehaviour:
   unlockGate2: 0
   unlockGate3: 0
   placePointPlaced2: 0
+  teleportObjects: []
   gate1: {fileID: 0}
   gate2: {fileID: 0}
   gate3: {fileID: 0}

@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
     public bool unlockGate2 = false;
     public bool unlockGate3 = false;
     public bool placePointPlaced2 = false;
+    public List<GameObject> teleportObjects = new List<GameObject>();
 
     [Header("Gate Refe")]
     public GameObject gate1;
@@ -144,7 +145,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                //timeOfStayText.SetActive(false);
+                timeOfStayText.SetActive(false);
             }
         }
 
