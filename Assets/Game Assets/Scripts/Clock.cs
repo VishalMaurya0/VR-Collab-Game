@@ -8,6 +8,7 @@ public class Clock : MonoBehaviour
     public List<float> gearSpeeds = new();
     public GameObject minuteHand;
     public GameObject timeManipulator;
+    public bool isManipulating = false;
 
     public float time = 0f;
 
@@ -32,8 +33,10 @@ public class Clock : MonoBehaviour
 
         if (timeManipulator != null)
         {
-            GameManager.Instance.timeSpeed = timeManipulator.transform.localEulerAngles.z / 30;
-            Debug.Log(GameManager.Instance.timeSpeed);
+            if (isManipulating)
+                GameManager.Instance.timeSpeed = timeManipulator.transform.localEulerAngles.z / 30;
+            else
+                timeManipulator.transform.localEulerAngles = new Vector3(0f, 0f, GameManager.Instance.timeSpeed * 30);
         }
     }
 }
