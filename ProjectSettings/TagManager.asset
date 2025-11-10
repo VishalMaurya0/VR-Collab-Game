@@ -6,6 +6,7 @@ TagManager:
   tags:
   - TimeOfStay
   - Gate1
+  - HelpText
   layers:
   - Default
   - TransparentFX

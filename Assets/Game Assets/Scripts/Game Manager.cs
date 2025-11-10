@@ -13,13 +13,15 @@ public class GameManager : MonoBehaviour
 
     [Header("Game State")]
     public int currentLevel = 1;
+    public float timeSpeed = 1f;
 
     [Header("References")]
     public List<string> PaintingWorlds = new List<string>();
     public Transition transitionEffect;
     public GameObject postProcessPrefab;
     public GameObject CanvasForTimeTOStay;
-    public GameObject timeOfStayText;   
+    public TMP_Text timeOfStayText;   
+    public TMP_Text helpText;   
     public Camera mainCamera;
     public GameObject playerPrefab;
     public GameObject playerGO;
@@ -47,6 +49,7 @@ public class GameManager : MonoBehaviour
     public float timer_InsidePainting = 0f;
     bool insidePainting = false;
     bool rightTriggerPressed = false;
+    public float timeToshowHelpText = 3f;
 
 
     private void Awake()
@@ -129,19 +132,31 @@ public class GameManager : MonoBehaviour
 
     private void TryFindOrCreateTimeUI()
     {
-        timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+        if (timeOfStayText != null && timeOfStayText.gameObject != null && timeOfStayText.gameObject.scene.name != null)
+        {
+            return;
+        }
+
+        timeOfStayText = GameObject.FindWithTag("TimeOfStay")?.GetComponent<TMP_Text>();
+        helpText = GameObject.FindWithTag("HelpText")?.GetComponent<TMP_Text>();
         mainCamera = GameObject.FindAnyObjectByType<Camera>();
 
         if (timeOfStayText == null && CanvasForTimeTOStay != null)
         {
-            Instantiate(CanvasForTimeTOStay,
-                mainCamera.transform);
-            timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+            var canvasInstance = Instantiate(CanvasForTimeTOStay, mainCamera.transform);
+            DontDestroyOnLoad(canvasInstance); // Keep same canvas across scenes
+            timeOfStayText = GameObject.FindWithTag("TimeOfStay")?.GetComponent<TMP_Text>();
         }
 
         if (timeOfStayText != null)
-            timeOfStayText.SetActive(false);
+            timeOfStayText.gameObject.SetActive(false);
+
+        if (helpText == null && timeOfStayText != null)
+        {
+            helpText = GameObject.FindWithTag("HelpText")?.GetComponent<TMP_Text>();
+        }
     }
+
 
 
     private void Start()
@@ -150,7 +165,12 @@ public class GameManager : MonoBehaviour
         InitializeTransition();
         if (timeOfStayText == null)
         {
-            timeOfStayText = GameObject.FindWithTag("TimeOfStay");
+            timeOfStayText = GameObject.FindWithTag("TimeOfStay")?.GetComponent<TMP_Text>();
+        }
+        if (helpText == null && timeOfStayText != null)
+        {
+            helpText = GameObject.FindWithTag("HelpText")?.GetComponent<TMP_Text>();
+            helpText.gameObject.SetActive(false);
         }
     }
 
@@ -166,10 +186,11 @@ public class GameManager : MonoBehaviour
 
         if (timeOfStayText != null)
         {
+            
             if (insidePainting)
             {
                 float timeLeft = totalTimeInsidePainting - timer_InsidePainting;
-                timeOfStayText.SetActive(true);
+                timeOfStayText.gameObject.SetActive(true);
                 TMP_Text text = timeOfStayText.GetComponent<TMP_Text>();
                 text.text = "Time Of Stay: " + timeLeft.ToString("F2") + " secs";
                 runOnce = true;
@@ -177,7 +198,20 @@ public class GameManager : MonoBehaviour
             else if (!teleportable && runOnce)
             {
                 runOnce = false;
-                timeOfStayText.SetActive(false);
+                timeOfStayText.gameObject.SetActive(false);
+            }
+        }
+
+        if (helpText != null)
+        {
+            if (timeToshowHelpText > 0)
+            {
+                helpText.gameObject.SetActive(true);
+                timeToshowHelpText -= Time.deltaTime;
+            }
+            if (timeToshowHelpText <= 0)
+            {
+                helpText.gameObject.SetActive(false);
             }
         }
 
@@ -213,7 +247,7 @@ public class GameManager : MonoBehaviour
 
         if (insidePainting)
         {
-            timer_InsidePainting += Time.deltaTime;
+            timer_InsidePainting += Time.deltaTime * timeSpeed;
             if (timer_InsidePainting >= totalTimeInsidePainting)
             {
                 // Time's up, exit painting

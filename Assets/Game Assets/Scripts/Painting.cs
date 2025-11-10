@@ -10,9 +10,8 @@ public class Painting : MonoBehaviour
         Debug.Log("Player is inside painting trigger.");
         if (other.CompareTag("Player"))
         {
-            GameManager.Instance.timeOfStayText.SetActive(true);
-            TMP_Text text = GameManager.Instance.timeOfStayText.GetComponent<TMP_Text>();
-            text.text = "Press Right Hand Trigger Button to Go inside The Painting!!";
+            GameManager.Instance.timeOfStayText.gameObject.SetActive(true);
+            GameManager.Instance.timeOfStayText.text = "Press Right Hand Trigger Button to Go inside The Painting!!";
 
             GameManager.Instance.teleportable = true;
         }
@@ -22,7 +21,7 @@ public class Painting : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            GameManager.Instance.timeOfStayText.SetActive(false);
+            GameManager.Instance.timeOfStayText.gameObject.SetActive(false);
             GameManager.Instance.teleportable = false;
         }
     }

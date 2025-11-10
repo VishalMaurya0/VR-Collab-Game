@@ -20,6 +20,9 @@ public class Portal : MonoBehaviour
             GameManager.Instance.teleportObjects.Add(other.gameObject);
             DontDestroyOnLoad(other.gameObject);
             other.gameObject.SetActive(false);
+
+            GameManager.Instance.timeToshowHelpText = 3f;
+            GameManager.Instance.helpText.text = "Object has been teleported to the Puzzle Room!";
         }
     }
 }
