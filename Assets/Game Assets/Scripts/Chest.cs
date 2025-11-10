@@ -9,6 +9,7 @@ public class Chest : MonoBehaviour
 {
     [Header("REFE")]
     public Grabbable grabbable;
+    public GameObject chestTop;
 
     [Header("Chest Code")]
     public List<int> code = new();
@@ -70,17 +71,19 @@ public class Chest : MonoBehaviour
         CheckCode();
     }
 
-    private void CheckCode()
+    public void CheckCode()
     {
         for (int i = 0; i < ansCode.Count; i++)
         {
             if (code[i] != ansCode[i])
             {
-                grabbable.enabled = false;
+                //grabbable.enabled = false;
                 return;
             }
         }
 
+                chestTop.GetComponent<Rigidbody>().isKinematic = false;
+        //chestTop.GetComponent<Rigidbody>().isKinematic = true;
         grabbable.enabled = true;
     }
 

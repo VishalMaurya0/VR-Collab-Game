@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR;
 
 public class GameManager : MonoBehaviour
 {
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
     public int currentPaintingIndex = 0;
 
     [Header("Across Data")]
+    public bool teleportable = false;
     public bool unlockGate1 = false;
     public bool unlockGate2 = false;
     public bool unlockGate3 = false;
@@ -44,6 +46,7 @@ public class GameManager : MonoBehaviour
     public float totalTimeInsidePainting = 10f;
     public float timer_InsidePainting = 0f;
     bool insidePainting = false;
+    bool rightTriggerPressed = false;
 
 
     private void Awake()
@@ -92,6 +95,7 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] ActiveSceneChanged: {prev.name} -> {next.name}");
         // sometimes activeSceneChanged gets called when sceneLoaded doesn't in editor/build; run reinit too
         StartCoroutine(ReinitializeSceneReferences());
+
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -150,6 +154,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    bool runOnce = false;
     private void Update()
     {
         if (transitionEffect == null)
@@ -166,14 +172,34 @@ public class GameManager : MonoBehaviour
                 timeOfStayText.SetActive(true);
                 TMP_Text text = timeOfStayText.GetComponent<TMP_Text>();
                 text.text = "Time Of Stay: " + timeLeft.ToString("F2") + " secs";
+                runOnce = true;
             }
-            else
+            else if (!teleportable && runOnce)
             {
+                runOnce = false;
                 timeOfStayText.SetActive(false);
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && transitionEffect != null)
+        {
+            InputDevice rightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            if (rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool rightTriggerValue))
+            {
+                if (rightTriggerValue && !rightTriggerPressed)
+                {
+                    rightTriggerPressed = true;
+                    Debug.Log("Right Trigger Pressed");
+                }
+                else if (!rightTriggerValue && rightTriggerPressed)
+                {
+                    rightTriggerPressed = false;
+                    Debug.Log("Right Trigger Released");
+                }
+            }
+        }   // Right Trigger
+
+
+        if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable)
         {
             baseSceneName = SceneManager.GetActiveScene().name;
             StartCoroutine(transitionEffect.DoTransition(PaintingWorlds[currentPaintingIndex]));
@@ -182,7 +208,7 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R) && transitionEffect != null)
         {
-            StartCoroutine(transitionEffect.ReverseTransition());
+            //StartCoroutine(transitionEffect.ReverseTransition());
         }
 
         if (insidePainting)
@@ -240,13 +266,17 @@ public class GameManager : MonoBehaviour
             if (playerGO == null)
             {
                 playerGO = GameObject.FindWithTag("Player");
+                return;
             }
 
             foreach (GameObject obj in teleportObjects)
             {
                 if (obj != null)
                 {
-                    Instantiate(obj, playerGO.transform.position, Quaternion.identity);
+                    obj.transform.position = playerGO.transform.position;
+                    obj.SetActive(true);
+                    SceneManager.MoveGameObjectToScene(obj, SceneManager.GetActiveScene());
+                    //Instantiate(obj, playerGO.transform.position, Quaternion.identity).SetActive(true);
                 }
             }
             teleportObjects.Clear();

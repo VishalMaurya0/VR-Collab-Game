@@ -21,7 +21,9 @@ public class ButtonSetCode : MonoBehaviour
 
     private void OnButtonPressed()
     {
-        targetChest.ShowButtonUI(true);
+        targetChest.code[buttonIndex] = (targetChest.code[buttonIndex] + 1) % 10;
+        //targetChest.ShowButtonUI(true);
+        targetChest.CheckCode();
         targetChest.codeIndex = buttonIndex;
     }
 

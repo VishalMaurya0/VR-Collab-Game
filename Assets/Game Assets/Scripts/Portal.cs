@@ -18,7 +18,8 @@ public class Portal : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("Grabbable"))
         {
             GameManager.Instance.teleportObjects.Add(other.gameObject);
-            //other.gameObject.SetActive(false);
+            DontDestroyOnLoad(other.gameObject);
+            other.gameObject.SetActive(false);
         }
     }
 }
