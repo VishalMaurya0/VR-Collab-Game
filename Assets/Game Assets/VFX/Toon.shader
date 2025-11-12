@@ -1,144 +1,125 @@
-Shader "Custom/Toon"
+Shader "Custom/Toon_Fixed"
 {
     Properties
     {
-        
-		_Color("Color", Color) = (1,1,1,1)
-		_MainTex("Main Texture", 2D) = "white" {}
-		// Ambient light is applied uniformly to all surfaces on the object.
-		[HDR]
-		_AmbientColor("Ambient Color", Color) = (0.4,0.4,0.4,1)
-		[HDR]
-		_SpecularColor("Specular Color", Color) = (0.9,0.9,0.9,1)
-		// Controls the size of the specular reflection.
-		_Glossiness("Glossiness", Float) = 32
-		[HDR]
-		_RimColor("Rim Color", Color) = (1,1,1,1)
-		_RimAmount("Rim Amount", Range(0, 1)) = 0.716
-		// Control how smoothly the rim blends when approaching unlit
-		// parts of the surface.
-		_RimThreshold("Rim Threshold", Range(0, 1)) = 0.1		
+        _Color("Color", Color) = (1,1,1,1)
+        _MainTex("Main Texture", 2D) = "white" {}
+        [HDR]_AmbientColor("Ambient Color", Color) = (0.4,0.4,0.4,1)
+        [HDR]_SpecularColor("Specular Color", Color) = (0.9,0.9,0.9,1)
+        _Glossiness("Glossiness", Float) = 32
+        [HDR]_RimColor("Rim Color", Color) = (1,1,1,1)
+        _RimAmount("Rim Amount", Range(0, 1)) = 0.716
+        _RimThreshold("Rim Threshold", Range(0, 1)) = 0.1
     }
 
     SubShader
     {
-        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
+        Tags
+        {
+            "RenderType" = "Opaque"
+            "RenderPipeline" = "UniversalPipeline"
+        }
 
         Pass
         {
-            // Setup our pass to use Forward rendering, and only receive
-			// data on the main directional light and ambient light.
-			Tags
-			{
-				"LightMode" = "UniversalForward"
-				"PassFlags" = "OnlyDirectional"
-			}
+            Name "ForwardLit"
+            Tags { "LightMode" = "UniversalForward" }
 
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			// Compile multiple versions of this shader depending on lighting settings.
-			#pragma multi_compile_fwdbase
-			
-			#include "UnityCG.cginc"
-			// Files below include macros and functions to assist
-			// with lighting and shadows.
-			#include "Lighting.cginc"
-			#include "AutoLight.cginc"
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma multi_compile_fwdbase
+            #pragma multi_compile_instancing
 
-			struct appdata
-			{
-				float4 vertex : POSITION;				
-				float4 uv : TEXCOORD0;
-				float3 normal : NORMAL;
-			};
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
-			struct v2f
-			{
-				float4 pos : SV_POSITION;
-				float3 worldNormal : NORMAL;
-				float2 uv : TEXCOORD0;
-				float3 viewDir : TEXCOORD1;	
-				// Macro found in Autolight.cginc. Declares a vector4
-				// into the TEXCOORD2 semantic with varying precision 
-				// depending on platform target.
-				SHADOW_COORDS(2)
-			};
+            struct Attributes
+            {
+                float4 positionOS   : POSITION;
+                float3 normalOS     : NORMAL;
+                float2 uv           : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
-			
-			v2f vert (appdata v)
-			{
-				v2f o;
-				o.pos = UnityObjectToClipPos(v.vertex);
-				o.worldNormal = UnityObjectToWorldNormal(v.normal);		
-				o.viewDir = WorldSpaceViewDir(v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				// Defined in Autolight.cginc. Assigns the above shadow coordinate
-				// by transforming the vertex from world space to shadow-map space.
-				TRANSFER_SHADOW(o)
-				return o;
-			}
-			
-			float4 _Color;
+            struct Varyings
+            {
+                float4 positionHCS  : SV_POSITION;
+                float3 normalWS     : TEXCOORD0;
+                float2 uv           : TEXCOORD1;
+                float3 viewDirWS    : TEXCOORD2;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
 
-			float4 _AmbientColor;
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+            float4 _MainTex_ST;
 
-			float4 _SpecularColor;
-			float _Glossiness;		
+            float4 _Color;
+            float4 _AmbientColor;
+            float4 _SpecularColor;
+            float _Glossiness;
+            float4 _RimColor;
+            float _RimAmount;
+            float _RimThreshold;
 
-			float4 _RimColor;
-			float _RimAmount;
-			float _RimThreshold;	
+            Varyings vert (Attributes IN)
+            {
+                Varyings OUT;
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 
-			float4 frag (v2f i) : SV_Target
-			{
-				float3 normal = normalize(i.worldNormal);
-				float3 viewDir = normalize(i.viewDir);
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.normalWS = TransformObjectToWorldNormal(IN.normalOS);
+                OUT.uv = TRANSFORM_TEX(IN.uv, _MainTex);
 
-				// Lighting below is calculated using Blinn-Phong,
-				// with values thresholded to creat the "toon" look.
-				// https://en.wikipedia.org/wiki/Blinn-Phong_shading_model
+                float3 cameraPosWS = GetCameraPositionWS();
+                float3 worldPos = TransformObjectToWorld(IN.positionOS.xyz);
+                OUT.viewDirWS = normalize(cameraPosWS - worldPos);
+                return OUT;
+            }
 
-				// Calculate illumination from directional light.
-				// _WorldSpaceLightPos0 is a vector pointing the OPPOSITE
-				// direction of the main directional light.
-				float NdotL = dot(_WorldSpaceLightPos0, normal);
+            half4 frag (Varyings IN) : SV_Target
+            {
+                UNITY_SETUP_INSTANCE_ID(IN);
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
-				// Samples the shadow map, returning a value in the 0...1 range,
-				// where 0 is in the shadow, and 1 is not.
-				float shadow = SHADOW_ATTENUATION(i);
-				// Partition the intensity into light and dark, smoothly interpolated
-				// between the two to avoid a jagged break.
-				float lightIntensity = smoothstep(0, 0.01, NdotL * shadow);	
-				// Multiply by the main directional light's intensity and color.
-				float4 light = lightIntensity * _LightColor0;
+                float3 normal = normalize(IN.normalWS);
+                float3 viewDir = normalize(IN.viewDirWS);
 
-				// Calculate specular reflection.
-				float3 halfVector = normalize(_WorldSpaceLightPos0 + viewDir);
-				float NdotH = dot(normal, halfVector);
-				// Multiply _Glossiness by itself to allow artist to use smaller
-				// glossiness values in the inspector.
-				float specularIntensity = pow(NdotH * lightIntensity, _Glossiness * _Glossiness);
-				float specularIntensitySmooth = smoothstep(0.005, 0.01, specularIntensity);
-				float4 specular = specularIntensitySmooth * _SpecularColor;				
+                // Directional light
+                Light mainLight = GetMainLight();
+                float NdotL = saturate(dot(normal, mainLight.direction));
 
-				// Calculate rim lighting.
-				float rimDot = 1 - dot(viewDir, normal);
-				// We only want rim to appear on the lit side of the surface,
-				// so multiply it by NdotL, raised to a power to smoothly blend it.
-				float rimIntensity = rimDot * pow(NdotL, _RimThreshold);
-				rimIntensity = smoothstep(_RimAmount - 0.01, _RimAmount + 0.01, rimIntensity);
-				float4 rim = rimIntensity * _RimColor;
+                // Toon light step
+                float lightStep = smoothstep(0, 0.01, NdotL);
+                float3 lightColor = lightStep * mainLight.color;
 
-				float4 sample = tex2D(_MainTex, i.uv);
+                // Specular highlight (Blinn-Phong)
+                float3 halfDir = normalize(mainLight.direction + viewDir);
+                float NdotH = saturate(dot(normal, halfDir));
+                float spec = pow(NdotH, _Glossiness * _Glossiness);
+                float specSmooth = smoothstep(0.005, 0.01, spec);
+                float3 specular = specSmooth * _SpecularColor.rgb;
 
-				return (light + _AmbientColor + specular + rim) * _Color * sample;
-			}
-			ENDCG
+                // Rim lighting
+                float rimDot = 1 - dot(viewDir, normal);
+                float rimIntensity = rimDot * pow(NdotL, _RimThreshold);
+                rimIntensity = smoothstep(_RimAmount - 0.01, _RimAmount + 0.01, rimIntensity);
+                float3 rim = rimIntensity * _RimColor.rgb;
+
+                // Sample texture
+                float4 albedo = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv) * _Color;
+
+                // Combine
+                float3 finalColor = (lightColor + _AmbientColor.rgb + specular + rim) * albedo.rgb;
+
+                return float4(finalColor, albedo.a);
+            }
+            ENDHLSL
         }
 
-		UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
     }
 }
