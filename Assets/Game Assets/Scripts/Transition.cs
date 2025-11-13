@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class Transition : MonoBehaviour
@@ -68,15 +69,65 @@ public class Transition : MonoBehaviour
         TryFetchOverrides();
     }
 
-    public IEnumerator DoTransition(string scene)
+
+
+
+
+
+
+
+    private string activeScene;
+    private Dictionary<string, Scene> loadedScenes = new Dictionary<string, Scene>();
+
+    public IEnumerator DoTransition(string newScene)
     {
         TryFetchOverrides();
         if (!AreOverridesValid()) yield break;
 
         yield return LerpSettings(beforeTransition, afterTransition);
 
-        SceneManager.LoadScene(scene);
+        // Pause gameplay globally during transition
+        Time.timeScale = 0f;
+
+        // Load scene additively if not already loaded
+        if (!loadedScenes.ContainsKey(newScene))
+        {
+            AsyncOperation loadOp = SceneManager.LoadSceneAsync(newScene, LoadSceneMode.Additive);
+            yield return loadOp;
+            loadedScenes[newScene] = SceneManager.GetSceneByName(newScene);
+        }
+
+        // Deactivate previous scene objects
+        if (!string.IsNullOrEmpty(activeScene))
+            SetSceneActiveState(activeScene, false);
+
+        // Activate new scene objects
+        SetSceneActiveState(newScene, true);
+
+        // Set lighting and camera references
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(newScene));
+
+        // Resume time
+        Time.timeScale = 1f;
+
+        // Update current scene reference
+        activeScene = newScene;
     }
+
+    private void SetSceneActiveState(string sceneName, bool isActive)
+    {
+        Scene scene = SceneManager.GetSceneByName(sceneName);
+        if (!scene.isLoaded) return;
+
+        foreach (GameObject obj in scene.GetRootGameObjects())
+        {
+            obj.SetActive(isActive);
+        }
+    }
+
+
+
+
 
     public IEnumerator ReverseTransition()
     {
