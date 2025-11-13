@@ -31,6 +31,7 @@ Shader "Custom/Toon_Fixed"
             #pragma multi_compile_fwdbase
             #pragma multi_compile_instancing
 
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -88,38 +89,30 @@ Shader "Custom/Toon_Fixed"
                 float3 normal = normalize(IN.normalWS);
                 float3 viewDir = normalize(IN.viewDirWS);
 
-                // Directional light
                 Light mainLight = GetMainLight();
                 float NdotL = saturate(dot(normal, mainLight.direction));
 
-                // Toon light step
                 float lightStep = smoothstep(0, 0.01, NdotL);
                 float3 lightColor = lightStep * mainLight.color;
 
-                // Specular highlight (Blinn-Phong)
                 float3 halfDir = normalize(mainLight.direction + viewDir);
                 float NdotH = saturate(dot(normal, halfDir));
                 float spec = pow(NdotH, _Glossiness * _Glossiness);
                 float specSmooth = smoothstep(0.005, 0.01, spec);
                 float3 specular = specSmooth * _SpecularColor.rgb;
 
-                // Rim lighting
                 float rimDot = 1 - dot(viewDir, normal);
                 float rimIntensity = rimDot * pow(NdotL, _RimThreshold);
                 rimIntensity = smoothstep(_RimAmount - 0.01, _RimAmount + 0.01, rimIntensity);
                 float3 rim = rimIntensity * _RimColor.rgb;
 
-                // Sample texture
                 float4 albedo = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv) * _Color;
 
-                // Combine
                 float3 finalColor = (lightColor + _AmbientColor.rgb + specular + rim) * albedo.rgb;
-
                 return float4(finalColor, albedo.a);
             }
             ENDHLSL
         }
 
-        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
     }
 }
