@@ -84,7 +84,7 @@ public class Chest : MonoBehaviour
 
                 chestTop.GetComponent<Rigidbody>().isKinematic = false;
         //chestTop.GetComponent<Rigidbody>().isKinematic = true;
-        grabbable.enabled = true;
+        //grabbable.enabled = true;
     }
 
     public void ShowButtonUI(bool show)

@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using Autohand;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -9,6 +11,7 @@ public class Transition : MonoBehaviour
 {
     [Header("References")]
     public Volume volume;
+    public AutoHandPlayer rig;
 
     [Header("Transition Duration")]
     public float transitionDuration = 2f;
@@ -79,51 +82,32 @@ public class Transition : MonoBehaviour
     private string activeScene;
     private Dictionary<string, Scene> loadedScenes = new Dictionary<string, Scene>();
 
-    public IEnumerator DoTransition(string newScene)
+    public IEnumerator DoTransition(bool returning)
     {
         TryFetchOverrides();
         if (!AreOverridesValid()) yield break;
 
         yield return LerpSettings(beforeTransition, afterTransition);
 
-        // Pause gameplay globally during transition
-        Time.timeScale = 0f;
-
-        // Load scene additively if not already loaded
-        if (!loadedScenes.ContainsKey(newScene))
+        if (GameManager.Instance.playerGO != null)
         {
-            AsyncOperation loadOp = SceneManager.LoadSceneAsync(newScene, LoadSceneMode.Additive);
-            yield return loadOp;
-            loadedScenes[newScene] = SceneManager.GetSceneByName(newScene);
-        }
+            if (!returning) {
+                Quaternion originalRotation = rig.transform.rotation;
+                rig.transform.SetPositionAndRotation(GameManager.Instance.paintingPos[GameManager.Instance.currentPaintingIndex], originalRotation);
 
-        // Deactivate previous scene objects
-        if (!string.IsNullOrEmpty(activeScene))
-            SetSceneActiveState(activeScene, false);
-
-        // Activate new scene objects
-        SetSceneActiveState(newScene, true);
-
-        // Set lighting and camera references
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName(newScene));
-
-        // Resume time
-        Time.timeScale = 1f;
-
-        // Update current scene reference
-        activeScene = newScene;
-    }
-
-    private void SetSceneActiveState(string sceneName, bool isActive)
-    {
-        Scene scene = SceneManager.GetSceneByName(sceneName);
-        if (!scene.isLoaded) return;
-
-        foreach (GameObject obj in scene.GetRootGameObjects())
-        {
-            obj.SetActive(isActive);
+                //GameManager.Instance.Paintings[GameManager.Instance.currentPaintingIndex].SetActive(true);
+                //GameManager.Instance.Room.SetActive(false);
+            }
+            else
+            {
+                Quaternion originalRotation = rig.transform.rotation;
+                rig.transform.SetPositionAndRotation(GameManager.Instance.returningPos[GameManager.Instance.currentPaintingIndex], originalRotation);
+                //GameManager.Instance.Paintings[GameManager.Instance.currentPaintingIndex].SetActive(false);
+                //GameManager.Instance.Room.SetActive(true);
+            }
         }
     }
+
 
 
 

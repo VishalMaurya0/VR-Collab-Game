@@ -37,6 +37,9 @@ public class GameManager : MonoBehaviour
     public bool unlockGate3 = false;
     public bool placePointPlaced2 = false;
     public List<GameObject> teleportObjects = new List<GameObject>();
+    public List<Vector3> paintingPos = new ();
+    public List<Vector3> returningPos = new();
+    public GameObject Room;
 
     [Header("Gate Refe")]
     public GameObject gate1;
@@ -232,17 +235,30 @@ public class GameManager : MonoBehaviour
             }
         }   // Right Trigger
 
+        StartCoroutine(RightTriggerPress());
 
-        if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable)
-        {
-            baseSceneName = SceneManager.GetActiveScene().name;
-            StartCoroutine(transitionEffect.DoTransition(PaintingWorlds[currentPaintingIndex]));
-            insidePainting = true;
-        }
 
         if (Input.GetKeyDown(KeyCode.R) && transitionEffect != null)
         {
             //StartCoroutine(transitionEffect.ReverseTransition());
+        }
+
+        
+
+        HandleTeleport();
+
+
+    }
+
+    IEnumerator RightTriggerPress()
+    {
+        if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable)
+        {
+            baseSceneName = SceneManager.GetActiveScene().name;
+            yield return StartCoroutine(transitionEffect.DoTransition(false));
+            insidePainting = true;
+
+            yield return transitionEffect.ReverseTransition();
         }
 
         if (insidePainting)
@@ -251,15 +267,12 @@ public class GameManager : MonoBehaviour
             if (timer_InsidePainting >= totalTimeInsidePainting)
             {
                 // Time's up, exit painting
-                StartCoroutine(transitionEffect.DoTransition(baseSceneName));
+                yield return StartCoroutine(transitionEffect.DoTransition(true));
                 insidePainting = false;
                 timer_InsidePainting = 0f;
+                yield return transitionEffect.ReverseTransition();
             }
         }
-
-        HandleTeleport();
-
-
     }
 
     private void HandleTeleport()
