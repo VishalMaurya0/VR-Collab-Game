@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
     public int currentPaintingIndex = 0;
+    public int toSetPaintingIndex = 0;
 
     [Header("Across Data")]
     public bool teleportable = false;
@@ -39,6 +40,8 @@ public class GameManager : MonoBehaviour
     public List<GameObject> teleportObjects = new List<GameObject>();
     public List<Vector3> paintingPos = new ();
     public List<Vector3> returningPos = new();
+    public List<GameObject> Paintings = new();
+    public List<ObjectTeleportationVisibility> teleportationObjects = new();
     public GameObject Room;
 
     [Header("Gate Refe")]
@@ -186,6 +189,13 @@ public class GameManager : MonoBehaviour
         if (timeOfStayText == null)
             TryFindOrCreateTimeUI();
 
+        if (!insidePainting)
+        {
+            GameManager.Instance.timer_InsidePainting = 0;
+        }
+
+        CheckForObjectsInPaintingWorlds();
+
 
         if (timeOfStayText != null)
         {
@@ -244,19 +254,35 @@ public class GameManager : MonoBehaviour
         }
 
         
+        if (!insidePainting)
+            HandleTeleport();
 
-        HandleTeleport();
+    }
 
-
+    private void CheckForObjectsInPaintingWorlds()
+    {
+        foreach (var obj in teleportationObjects)
+        {
+            
+            if (obj.inPainting != currentPaintingIndex)
+            {
+                obj.gameObject.SetActive(false);
+            }
+            else
+            {
+                obj.gameObject.SetActive(true);
+            }
+        }
     }
 
     IEnumerator RightTriggerPress()
     {
-        if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable)
+        if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable && !insidePainting)
         {
             baseSceneName = SceneManager.GetActiveScene().name;
-            yield return StartCoroutine(transitionEffect.DoTransition(false));
             insidePainting = true;
+            yield return StartCoroutine(transitionEffect.DoTransition(false));
+            currentPaintingIndex = toSetPaintingIndex;
 
             yield return transitionEffect.ReverseTransition();
         }
@@ -269,6 +295,8 @@ public class GameManager : MonoBehaviour
                 // Time's up, exit painting
                 yield return StartCoroutine(transitionEffect.DoTransition(true));
                 insidePainting = false;
+                currentPaintingIndex = -1;
+
                 timer_InsidePainting = 0f;
                 yield return transitionEffect.ReverseTransition();
             }
@@ -285,7 +313,7 @@ public class GameManager : MonoBehaviour
             {
                 gate1 = GameObject.FindWithTag("Gate1");
             }
-            gate1.GetComponent<Grabbable>().enabled = true;
+            gate1.SetActive(false);
         }
         if (unlockGate2)
         {
@@ -293,7 +321,7 @@ public class GameManager : MonoBehaviour
             {
                 gate2 = GameObject.FindWithTag("Gate2");
             }
-            gate2.GetComponent<Grabbable>().enabled = true;
+            gate2.SetActive(false);
         }
         if (unlockGate3)
         {
@@ -301,14 +329,14 @@ public class GameManager : MonoBehaviour
             {
                 gate3 = GameObject.FindWithTag("Gate3");
             }
-            gate3.GetComponent<Grabbable>().enabled = true;
+            gate3.SetActive(false);
         }
 
 
         if (teleportObjects.Count > 0)
         {
-            if (SceneManager.GetActiveScene().name != baseSceneName)
-                return;
+            //if (SceneManager.GetActiveScene().name != baseSceneName)
+                //return;
 
             if (playerGO == null)
             {
@@ -320,9 +348,10 @@ public class GameManager : MonoBehaviour
             {
                 if (obj != null)
                 {
+                    //GameObject o = Instantiate(obj, playerGO.transform.position, Quaternion.identity);
                     obj.transform.position = playerGO.transform.position;
                     obj.SetActive(true);
-                    SceneManager.MoveGameObjectToScene(obj, SceneManager.GetActiveScene());
+                    //SceneManager.MoveGameObjectToScene(obj, SceneManager.GetActiveScene());
                     //Instantiate(obj, playerGO.transform.position, Quaternion.identity).SetActive(true);
                 }
             }

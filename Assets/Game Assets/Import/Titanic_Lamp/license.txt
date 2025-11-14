@@ -1,0 +1,8 @@
+Model Information:
+* title:	Titanic Lamp
+* source:	https://sketchfab.com/3d-models/titanic-lamp-882342fc76b44b9b80ace341db4c0707
+* author:	carlcapu9 (https://sketchfab.com/carlcapu9)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

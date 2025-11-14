@@ -1,4 +1,5 @@
 ﻿using Autohand;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
@@ -12,6 +13,9 @@ public class Transition : MonoBehaviour
     [Header("References")]
     public Volume volume;
     public AutoHandPlayer rig;
+    public GameObject boundary;
+
+    public List<Rigidbody> rigidbodiesToToggle;
 
     [Header("Transition Duration")]
     public float transitionDuration = 2f;
@@ -87,23 +91,29 @@ public class Transition : MonoBehaviour
         TryFetchOverrides();
         if (!AreOverridesValid()) yield break;
 
+                rig.maxMoveSpeed = 0f;
+                //boundary.SetActive(false);
+        //foreach (Rigidbody rb in rigidbodiesToToggle)
+        //{
+        //    rb.isKinematic = true;
+        //}
         yield return LerpSettings(beforeTransition, afterTransition);
 
         if (GameManager.Instance.playerGO != null)
         {
             if (!returning) {
-                Quaternion originalRotation = rig.transform.rotation;
-                rig.transform.SetPositionAndRotation(GameManager.Instance.paintingPos[GameManager.Instance.currentPaintingIndex], originalRotation);
+                //Quaternion originalRotation = rig.transform.rotation; 
+                //rig.transform.SetPositionAndRotation(GameManager.Instance.paintingPos[GameManager.Instance.currentPaintingIndex], originalRotation);
 
-                //GameManager.Instance.Paintings[GameManager.Instance.currentPaintingIndex].SetActive(true);
-                //GameManager.Instance.Room.SetActive(false);
+                GameManager.Instance.Paintings[GameManager.Instance.toSetPaintingIndex].SetActive(true);
+                GameManager.Instance.Room.SetActive(false);
             }
             else
             {
-                Quaternion originalRotation = rig.transform.rotation;
-                rig.transform.SetPositionAndRotation(GameManager.Instance.returningPos[GameManager.Instance.currentPaintingIndex], originalRotation);
-                //GameManager.Instance.Paintings[GameManager.Instance.currentPaintingIndex].SetActive(false);
-                //GameManager.Instance.Room.SetActive(true);
+                //Quaternion originalRotation = rig.transform.rotation;
+                //rig.transform.SetPositionAndRotation(GameManager.Instance.returningPos[GameManager.Instance.currentPaintingIndex], originalRotation);
+                GameManager.Instance.Paintings[GameManager.Instance.toSetPaintingIndex].SetActive(false);
+                GameManager.Instance.Room.SetActive(true);
             }
         }
     }
@@ -119,6 +129,13 @@ public class Transition : MonoBehaviour
         if (!AreOverridesValid()) yield break;
 
         yield return LerpSettings(afterTransition, beforeTransition);
+        boundary.SetActive(true);
+        //rig.GetComponent<Rigidbody>().isKinematic = false;
+        foreach (Rigidbody rb in rigidbodiesToToggle)
+        {
+            rb.isKinematic = false;
+        }
+        rig.maxMoveSpeed = 10f;
     }
 
     private IEnumerator LerpSettings(TransitionSettings start, TransitionSettings end)

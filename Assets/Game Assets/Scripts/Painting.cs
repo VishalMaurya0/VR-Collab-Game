@@ -14,6 +14,7 @@ public class Painting : MonoBehaviour
             GameManager.Instance.timeOfStayText.text = "Press Right Hand Trigger Button to Go inside The Painting!!";
 
             GameManager.Instance.teleportable = true;
+            GameManager.Instance.toSetPaintingIndex = paintingID;
         }
     }
 
