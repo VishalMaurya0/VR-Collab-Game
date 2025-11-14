@@ -23873,6 +23873,7 @@ MonoBehaviour:
   teleportObjects: []
   paintingPos:
   - {x: -145.591, y: 0.33512878, z: 80.942}
+  - {x: -131, y: 0.00006, z: -196.6}
   returningPos:
   - {x: 0, y: 0, z: 0}
   Room: {fileID: 1602405603}
