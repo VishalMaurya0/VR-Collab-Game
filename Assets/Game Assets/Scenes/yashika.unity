@@ -8158,8 +8158,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b165493e47689458502e402eac8d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeighingMachineManager
-  code: 00000000000000000000000000000000
-  ansCode: 02000000060000000000000006000000
+  code: []
+  ansCode: []
 --- !u!4 &631088125
 Transform:
   m_ObjectHideFlags: 0
@@ -8920,7 +8920,7 @@ PrefabInstance:
     - target: {fileID: 2989699051444104436, guid: 8d92548ec06e7fc43bdecc7693b0b646, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: fcb908f6ba5def243a80a60b56c4f73d, type: 2}
+      objectReference: {fileID: 2100000, guid: fd3c0dfff2ceb2d44be95caf68ca25f6, type: 2}
     - target: {fileID: 6099275383423060434, guid: 8d92548ec06e7fc43bdecc7693b0b646, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -8928,7 +8928,7 @@ PrefabInstance:
     - target: {fileID: 6628115107300462768, guid: 8d92548ec06e7fc43bdecc7693b0b646, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: afbf3ca9096aa8142beb3f6e89e25467, type: 2}
+      objectReference: {fileID: 2100000, guid: 3684d5c59114b28459d6bbc104af3990, type: 2}
     - target: {fileID: 7338141227227263929, guid: 8d92548ec06e7fc43bdecc7693b0b646, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

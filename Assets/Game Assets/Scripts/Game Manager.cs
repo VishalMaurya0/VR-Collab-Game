@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     public Camera mainCamera;
     public GameObject playerPrefab;
     public GameObject playerGO;
+    public GameObject PaintingPeice;
 
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
@@ -167,6 +168,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
         mainCamera = GameObject.FindAnyObjectByType<Camera>();
         InitializeTransition();
         if (timeOfStayText == null)
@@ -385,6 +387,8 @@ public class GameManager : MonoBehaviour
                 gate3 = GameObject.FindWithTag("Gate3");
             }
             gate3.SetActive(false);
+            PaintingPeice.GetComponent<Rigidbody>().isKinematic = false;
+            PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
         }
 
 
