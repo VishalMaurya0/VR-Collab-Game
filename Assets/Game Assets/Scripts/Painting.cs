@@ -7,7 +7,6 @@ public class Painting : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        Debug.Log("Player is inside painting trigger.");
         if (other.CompareTag("Player"))
         {
             GameManager.Instance.timeOfStayText.gameObject.SetActive(true);

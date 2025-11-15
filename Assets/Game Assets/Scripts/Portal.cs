@@ -11,30 +11,7 @@ public class Portal : MonoBehaviour
 
             AutoHandPlayer player = other.GetComponent<AutoHandPlayer>();
 
-            if (player != null)
-            {
-                // LEFT HAND
-                if (player.handLeft != null && player.handLeft.GetHeld() != null)
-                {
-                    GameManager.Instance.helpText.text = "Release the object to enter the Portal!";
-                    GameManager.Instance.timeToshowHelpText = 3f;
-                    return;
-                }
-
-                // RIGHT HAND
-                if (player.handRight != null && player.handRight.GetHeld() != null)
-                {
-                    GameManager.Instance.helpText.text = "Release the object to enter the Portal!";
-                    GameManager.Instance.timeToshowHelpText = 3f;
-                    return;
-                }
-
-                // Player is NOT holding anything
-                GameManager.Instance.timer_InsidePainting = GameManager.Instance.totalTimeInsidePainting;
-            }
-
-
-
+            GameManager.Instance.LocationSwitch(player);
         }
 
     }

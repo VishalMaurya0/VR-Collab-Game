@@ -275,6 +275,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    bool once = true;
     IEnumerator RightTriggerPress()
     {
         if ((Input.GetKeyDown(KeyCode.E) || rightTriggerPressed) && transitionEffect != null && teleportable && !insidePainting)
@@ -290,17 +292,70 @@ public class GameManager : MonoBehaviour
         if (insidePainting)
         {
             timer_InsidePainting += Time.deltaTime * timeSpeed;
-            if (timer_InsidePainting >= totalTimeInsidePainting)
+            if (timer_InsidePainting >= totalTimeInsidePainting && once)
             {
-                // Time's up, exit painting
-                yield return StartCoroutine(transitionEffect.DoTransition(true));
-                insidePainting = false;
-                currentPaintingIndex = -1;
+                
+                helpText.text = "Time's up! Return to the Portal to go Back.";
+                timeToshowHelpText = 3f;
 
-                timer_InsidePainting = 0f;
-                yield return transitionEffect.ReverseTransition();
+                SetGrabbable(false);
+                once = false;
             }
         }
+    }
+
+    public void SetGrabbable(bool canGrab)
+    {
+        Debug.Log($"Setting grabbable to {canGrab} for teleportation objects.");
+        foreach (var obj in teleportationObjects)
+        {
+            obj.GetComponent<Grabbable>().isGrabbable = canGrab;
+        }
+    }
+
+    public void LocationSwitch(AutoHandPlayer player)
+    {
+
+        if (player != null)
+        {
+            // LEFT HAND
+            if (player.handLeft != null && player.handLeft.GetHeld() != null)
+            {
+                GameManager.Instance.helpText.text = "Release the object to enter the Portal!";
+                GameManager.Instance.timeToshowHelpText = 3f;
+                return;
+            }
+
+            // RIGHT HAND
+            if (player.handRight != null && player.handRight.GetHeld() != null)
+            {
+                GameManager.Instance.helpText.text = "Release the object to enter the Portal!";
+                GameManager.Instance.timeToshowHelpText = 3f;
+                return;
+            }
+
+            // Player is NOT holding anything
+            //GameManager.Instance.timer_InsidePainting = GameManager.Instance.totalTimeInsidePainting;
+
+            teleportable = false;
+            StartCoroutine(ExitTransition());
+
+        }
+    }
+
+    IEnumerator ExitTransition()
+    {
+        // Time's up, exit painting
+        yield return StartCoroutine(transitionEffect.DoTransition(true));
+        insidePainting = false;
+        currentPaintingIndex = -1;
+
+        timer_InsidePainting = 0f;
+        yield return transitionEffect.ReverseTransition();
+
+
+        SetGrabbable(true);
+        once = true;
     }
 
     private void HandleTeleport()
