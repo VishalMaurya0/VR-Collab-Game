@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
     public GameObject playerPrefab;
     public GameObject playerGO;
     public GameObject PaintingPeice;
+    WeighingMachineManager weighingMachineManager;
 
     [Header("Inital Parameters")]
     public string baseSceneName = "Base Scene";
@@ -168,7 +169,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
+        PaintingPeice.GetComponent<Grabbable>().isGrabbable = false;
         mainCamera = GameObject.FindAnyObjectByType<Camera>();
         InitializeTransition();
         if (timeOfStayText == null)
@@ -180,6 +181,8 @@ public class GameManager : MonoBehaviour
             helpText = GameObject.FindWithTag("HelpText")?.GetComponent<TMP_Text>();
             helpText.gameObject.SetActive(false);
         }
+
+        weighingMachineManager = FindAnyObjectByType<WeighingMachineManager>();
     }
 
 
@@ -289,6 +292,7 @@ public class GameManager : MonoBehaviour
             currentPaintingIndex = toSetPaintingIndex;
 
             yield return transitionEffect.ReverseTransition();
+            WeigthReset();
         }
 
         if (insidePainting)
@@ -360,6 +364,11 @@ public class GameManager : MonoBehaviour
         once = true;
     }
 
+    private void WeigthReset()
+    {
+        weighingMachineManager.code = new List<float> { 0f, 0f, 0f, 0f };
+    }
+
     private void HandleTeleport()
     {
         
@@ -371,6 +380,11 @@ public class GameManager : MonoBehaviour
                 gate1 = GameObject.FindWithTag("Gate1");
             }
             gate1.SetActive(false);
+
+            totalTimeInsidePainting = 20f;
+
+            helpText.text = "Gate 1 Unlocked! You can now access new areas.";
+            timeToshowHelpText = 3f;
         }
         if (unlockGate2)
         {
@@ -379,6 +393,11 @@ public class GameManager : MonoBehaviour
                 gate2 = GameObject.FindWithTag("Gate2");
             }
             gate2.SetActive(false);
+            PaintingPeice.GetComponent<Rigidbody>().isKinematic = false;
+            PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
+            totalTimeInsidePainting = 100f;
+            helpText.text = "Gate 2 Unlocked! You can now access new areas.";
+            timeToshowHelpText = 3f;
         }
         if (unlockGate3)
         {
@@ -387,8 +406,8 @@ public class GameManager : MonoBehaviour
                 gate3 = GameObject.FindWithTag("Gate3");
             }
             gate3.SetActive(false);
-            PaintingPeice.GetComponent<Rigidbody>().isKinematic = false;
-            PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
+            helpText.text = "Gate 3 Unlocked! You can now access new areas.";
+            timeToshowHelpText = 3f;
         }
 
 
