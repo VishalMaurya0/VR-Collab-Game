@@ -371,7 +371,7 @@ public class GameManager : MonoBehaviour
 
     private void HandleTeleport()
     {
-        
+
 
         if (unlockGate1)
         {
@@ -379,12 +379,16 @@ public class GameManager : MonoBehaviour
             {
                 gate1 = GameObject.FindWithTag("Gate1");
             }
-            gate1.SetActive(false);
 
-            totalTimeInsidePainting = 20f;
+            if (gate1.activeSelf)
+            {
+                gate1.SetActive(false);
 
-            helpText.text = "Gate 1 Unlocked! You can now access new areas.";
-            timeToshowHelpText = 3f;
+                totalTimeInsidePainting = 15f;
+
+                helpText.text = "Gate 1 Unlocked! You can now access new areas.";
+                timeToshowHelpText = 3f;
+            }
         }
         if (unlockGate2)
         {
@@ -392,12 +396,15 @@ public class GameManager : MonoBehaviour
             {
                 gate2 = GameObject.FindWithTag("Gate2");
             }
-            gate2.SetActive(false);
-            PaintingPeice.GetComponent<Rigidbody>().isKinematic = false;
-            PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
-            totalTimeInsidePainting = 100f;
-            helpText.text = "Gate 2 Unlocked! You can now access new areas.";
-            timeToshowHelpText = 3f;
+            if (gate2.activeSelf)
+            {
+                gate2.SetActive(false);
+                PaintingPeice.GetComponent<Rigidbody>().isKinematic = false;
+                PaintingPeice.GetComponent<Grabbable>().isGrabbable = true;
+                totalTimeInsidePainting = 100f;
+                helpText.text = "Gate 2 Unlocked! You can now access new areas.";
+                timeToshowHelpText = 3f;
+            }
         }
         if (unlockGate3)
         {
@@ -405,9 +412,13 @@ public class GameManager : MonoBehaviour
             {
                 gate3 = GameObject.FindWithTag("Gate3");
             }
-            gate3.SetActive(false);
-            helpText.text = "Gate 3 Unlocked! You can now access new areas.";
-            timeToshowHelpText = 3f;
+            if (gate3.activeSelf)
+            {
+                gate3.SetActive(false);
+                helpText.text = "Gate 3 Unlocked! You can now access new areas.";
+                totalTimeInsidePainting = 1000f;
+                timeToshowHelpText = 3f;
+            }
         }
 
 
