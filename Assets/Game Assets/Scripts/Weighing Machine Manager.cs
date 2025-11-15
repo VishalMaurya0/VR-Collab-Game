@@ -5,10 +5,10 @@ using UnityEngine;
 public class WeighingMachineManager : MonoBehaviour
 {
 
-    public List<int> code = new();
-    public List<int> ansCode = new();
+    public List<float> code = new();
+    public List<float> ansCode = new();
 
-    internal void AddWeight(int id, int weight)
+    internal void AddWeight(int id, float weight)
     {
         if (id < 0 || id >= code.Count)
         {

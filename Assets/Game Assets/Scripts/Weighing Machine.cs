@@ -27,7 +27,7 @@ public class WeighingMachine : MonoBehaviour
 
     private void ChangeText()
     {
-        int currentWeight = linkedMachine.code[id];
+        float currentWeight = linkedMachine.code[id];
         displayText.text = currentWeight.ToString();
     }
 

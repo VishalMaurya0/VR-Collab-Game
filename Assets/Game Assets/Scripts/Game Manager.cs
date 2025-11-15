@@ -404,7 +404,7 @@ public class GameManager : MonoBehaviour
                 if (obj != null)
                 {
                     //GameObject o = Instantiate(obj, playerGO.transform.position, Quaternion.identity);
-                    obj.transform.position = playerGO.transform.position;
+                    //obj.transform.position = playerGO.transform.position + new Vector3(0, 5, 0);
                     obj.SetActive(true);
                     //SceneManager.MoveGameObjectToScene(obj, SceneManager.GetActiveScene());
                     //Instantiate(obj, playerGO.transform.position, Quaternion.identity).SetActive(true);
