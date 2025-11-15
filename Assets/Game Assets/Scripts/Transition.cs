@@ -135,7 +135,7 @@ public class Transition : MonoBehaviour
         {
             rb.isKinematic = false;
         }
-        rig.maxMoveSpeed = 10f;
+        rig.maxMoveSpeed = 5f;
     }
 
     private IEnumerator LerpSettings(TransitionSettings start, TransitionSettings end)
